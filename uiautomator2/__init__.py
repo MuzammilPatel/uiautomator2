@@ -961,7 +961,7 @@ class _Device(_BaseClient):
             raise ValueError("Invalid format {}".format(format))
 
     @retry(RetryError, delay=1.0, jitter=.5, tries=2)
-    def dump_hierarchy(self, compressed=False, pretty=False) -> str:
+    def dump_hierarchy(self, filename=None, compressed=False, pretty=False) -> str:
         """
         Args:
             shell (bool): use "adb shell uiautomator dump" to get hierarchy
@@ -977,6 +977,11 @@ class _Device(_BaseClient):
         content = self.jsonrpc.dumpWindowHierarchy(compressed, None)
         if content == "":
             raise RetryError("dump hierarchy is empty")
+
+        if filename:
+            with open(filename, "wb") as f:
+                f.write(content.encode("utf-8"))
+            f.close() 
 
         if pretty and "\n " not in content:
             xml_text = xml.dom.minidom.parseString(content.encode("utf-8"))
@@ -1087,7 +1092,7 @@ class _Device(_BaseClient):
         time.sleep(duration)
         self.click(x, y)  # use click last is for htmlreport
 
-    def long_click(self, x, y, duration: float = .5):
+    def long_click(self, x, y, duration: int = 5):
         '''long click at arbitrary coordinates.
         Args:
             duration (float): seconds of pressed
